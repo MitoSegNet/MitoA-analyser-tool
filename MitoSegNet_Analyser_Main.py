@@ -45,13 +45,14 @@ from scipy.stats import normaltest, mannwhitneyu, ttest_ind, f_oneway, kruskal, 
 from Plot_Significance import significance_bar
 
 import warnings
+
 warnings.simplefilter("ignore", UserWarning)
 warnings.simplefilter("ignore", FutureWarning)
 warnings.simplefilter("ignore", RuntimeWarning)
 
 
-#pd.set_option('display.max_columns', 10)
-#pd.set_option('display.width', 1000)
+# pd.set_option('display.max_columns', 10)
+# pd.set_option('display.width', 1000)
 
 
 # GUI
@@ -73,7 +74,7 @@ class Control:
     # opens link to documentation of how to use the program
     def help(self, window):
 
-        webbrowser.open_new("https://github.com/bio-chris/MitoSegNet")
+        webbrowser.open_new("https://github.com/MitoSegNet/MitoSegNet_Analyser")
 
     # open new window with specified width and height
     def new_window(self, window, title, width, height):
@@ -132,7 +133,6 @@ class MidWindow(Control):
         Control.__init__(self)
 
     def finalwindow1(self):
-
         fw1 = Tk()
 
         self.new_window(fw1, "MitoSegNet Analyser - Analysis of 2 samples", 300, 270)
@@ -141,12 +141,13 @@ class MidWindow(Control):
         morph_comparison = MorphComparison()
         correlation = CorrelationAnalysis()
 
-        control_class.place_button(fw1, "Morphological comparison\nGenerate table", morph_comparison.morph_comparison_table, 85, 20, 60, 150)
-        control_class.place_button(fw1, "Morphological comparison\nGenerate plots", morph_comparison.morph_comparison_plot, 85, 100, 60, 150)
+        control_class.place_button(fw1, "Morphological comparison\nGenerate table",
+                                   morph_comparison.morph_comparison_table, 85, 20, 60, 150)
+        control_class.place_button(fw1, "Morphological comparison\nGenerate plots",
+                                   morph_comparison.morph_comparison_plot, 85, 100, 60, 150)
         control_class.place_button(fw1, "Correlation analysis", correlation.corr_analysis, 85, 180, 60, 150)
 
     def finalwindow2(self):
-
         fw2 = Tk()
 
         multi_morph_comparison = MultiMorphComparison()
@@ -160,7 +161,6 @@ class MidWindow(Control):
                                    multi_morph_comparison.morph_comparison_plot, 85, 100, 60, 150)
 
     def midwindow(self):
-
         mw = Tk()
 
         self.new_window(mw, "MitoSegNet Analyser - Analysis", 300, 190)
@@ -168,6 +168,7 @@ class MidWindow(Control):
 
         control_class.place_button(mw, "2 samples", self.finalwindow1, 85, 20, 60, 150)
         control_class.place_button(mw, "More than 2 samples", self.finalwindow2, 85, 100, 60, 150)
+
 
 class Get_Measurements(Control):
 
@@ -221,7 +222,6 @@ class Get_Measurements(Control):
         self.place_button(gm_root, "Browse", askopenlabels, 435, 260, 30, 50)
         self.place_entry(gm_root, labpath, 25, 260, 30, 400)
 
-
         def measure():
 
             img_list = os.listdir(imgpath.get())
@@ -236,107 +236,115 @@ class Get_Measurements(Control):
 
             print("Measuring images ...\n")
 
-            for i, img in enumerate(img_list):
+            if img_list == os.listdir(labpath.get()):
 
-                print(i, img)
+                for i, img in enumerate(img_list):
 
-                read_img = cv2.imread(imgpath.get() + os.sep + img, -1)
-                read_lab = cv2.imread(labpath.get() + os.sep + img, cv2.IMREAD_GRAYSCALE)
+                    print(i, img)
 
-                # skeletonize
-                ##########################
+                    read_img = cv2.imread(imgpath.get() + os.sep + img, -1)
+                    read_lab = cv2.imread(labpath.get() + os.sep + img, cv2.IMREAD_GRAYSCALE)
 
-                """    
-                05-07-19
+                    # skeletonize
+                    ##########################
 
-                for some reason the sumarise function of skan prints out a different number of objects, which is why
-                i currently cannot include the branch data in the same table as the morph parameters    
-                """
+                    """    
+                    05-07-19
 
-                #read_lab_skel = img_as_bool(color.rgb2gray(io.imread(labpath.get() + os.sep + img)))
-                read_lab_skel = img_as_bool(cv2.imread(labpath.get() + os.sep + img, cv2.IMREAD_GRAYSCALE))
-                lab_skel = skeletonize(read_lab_skel).astype("uint8")
+                    for some reason the sumarise function of skan prints out a different number of objects, which is why
+                    i currently cannot include the branch data in the same table as the morph parameters    
+                    """
 
-                branch_data = summarise(lab_skel)
+                    # read_lab_skel = img_as_bool(color.rgb2gray(io.imread(labpath.get() + os.sep + img)))
+                    read_lab_skel = img_as_bool(cv2.imread(labpath.get() + os.sep + img, cv2.IMREAD_GRAYSCALE))
+                    lab_skel = skeletonize(read_lab_skel).astype("uint8")
 
-                curve_ind = []
-                for bd, ed in zip(branch_data["branch-distance"], branch_data["euclidean-distance"]):
+                    branch_data = summarise(lab_skel)
 
-                    if ed != 0.0:
-                        curve_ind.append((bd - ed) / ed)
-                    else:
-                        curve_ind.append(bd - ed)
+                    curve_ind = []
+                    for bd, ed in zip(branch_data["branch-distance"], branch_data["euclidean-distance"]):
 
-                branch_data["curvature-index"] = curve_ind
+                        if ed != 0.0:
+                            curve_ind.append((bd - ed) / ed)
+                        else:
+                            curve_ind.append(bd - ed)
 
-                grouped_branch_data_mean = branch_data.groupby(["skeleton-id"], as_index=False).mean()
+                    branch_data["curvature-index"] = curve_ind
 
-                grouped_branch_data_sum = branch_data.groupby(["skeleton-id"], as_index=False).sum()
+                    grouped_branch_data_mean = branch_data.groupby(["skeleton-id"], as_index=False).mean()
 
-                counter = collections.Counter(branch_data["skeleton-id"])
+                    grouped_branch_data_sum = branch_data.groupby(["skeleton-id"], as_index=False).sum()
 
-                n_branches = []
-                for i in grouped_branch_data_mean["skeleton-id"]:
-                    n_branches.append(counter[i])
+                    counter = collections.Counter(branch_data["skeleton-id"])
 
-                branch_len = grouped_branch_data_mean["branch-distance"].tolist()
-                tot_branch_len = grouped_branch_data_sum["branch-distance"].tolist()
+                    n_branches = []
+                    for i in grouped_branch_data_mean["skeleton-id"]:
+                        n_branches.append(counter[i])
 
-                curv_ind = grouped_branch_data_mean["curvature-index"].tolist()
+                    branch_len = grouped_branch_data_mean["branch-distance"].tolist()
+                    tot_branch_len = grouped_branch_data_sum["branch-distance"].tolist()
 
-                ##########################
+                    curv_ind = grouped_branch_data_mean["curvature-index"].tolist()
 
-                labelled_img = label(read_lab)
+                    ##########################
 
-                labelled_img_props = regionprops(label_image=labelled_img, intensity_image=read_img, coordinates='xy')
+                    labelled_img = label(read_lab)
 
-                area = [obj.area for obj in labelled_img_props]
-                minor_axis_length = [obj.minor_axis_length for obj in labelled_img_props]
-                major_axis_length = [obj.major_axis_length for obj in labelled_img_props]
-                eccentricity = [obj.eccentricity for obj in labelled_img_props]
-                perimeter = [obj.perimeter for obj in labelled_img_props]
-                solidity = [obj.solidity for obj in labelled_img_props]
-                mean_int = [obj.mean_intensity for obj in labelled_img_props]
-                max_int = [obj.max_intensity for obj in labelled_img_props]
-                min_int = [obj.min_intensity for obj in labelled_img_props]
+                    labelled_img_props = regionprops(label_image=labelled_img, intensity_image=read_img,
+                                                     coordinates='xy')
 
-                def add_to_dataframe(df, measure_str, measure, n):
+                    area = [obj.area for obj in labelled_img_props]
+                    minor_axis_length = [obj.minor_axis_length for obj in labelled_img_props]
+                    major_axis_length = [obj.major_axis_length for obj in labelled_img_props]
+                    eccentricity = [obj.eccentricity for obj in labelled_img_props]
+                    perimeter = [obj.perimeter for obj in labelled_img_props]
+                    solidity = [obj.solidity for obj in labelled_img_props]
+                    mean_int = [obj.mean_intensity for obj in labelled_img_props]
+                    max_int = [obj.max_intensity for obj in labelled_img_props]
+                    min_int = [obj.min_intensity for obj in labelled_img_props]
 
-                    df.loc[n] = [img] + [measure_str, np.average(measure), np.median(measure), np.std(measure),
-                                         np.std(measure) / np.sqrt(len(measure)), np.min(measure), np.max(measure),
-                                         len(measure)]
+                    def add_to_dataframe(df, measure_str, measure, n):
 
-                meas_str_l = ["Area", "Minor Axis Length", "Major Axis Length", "Eccentricity", "Perimeter", "Solidity",
-                              "Mean Intensity", "Max Intensity", "Min Intensity"]
-                meas_l = [area, minor_axis_length, major_axis_length, eccentricity, perimeter, solidity, mean_int,
-                          max_int,
-                          min_int]
+                        df.loc[n] = [img] + [measure_str, np.average(measure), np.median(measure), np.std(measure),
+                                             np.std(measure) / np.sqrt(len(measure)), np.min(measure), np.max(measure),
+                                             len(measure)]
 
-                #########
+                    meas_str_l = ["Area", "Minor Axis Length", "Major Axis Length", "Eccentricity", "Perimeter",
+                                  "Solidity",
+                                  "Mean Intensity", "Max Intensity", "Min Intensity"]
+                    meas_l = [area, minor_axis_length, major_axis_length, eccentricity, perimeter, solidity, mean_int,
+                              max_int,
+                              min_int]
 
-                meas_str_l_branch = ["Number of branches", "Branch length", "Total branch length", "Curvature index"]
-                meas_l_branch = [n_branches, branch_len, tot_branch_len, curv_ind]
+                    #########
 
-                #########
+                    meas_str_l_branch = ["Number of branches", "Branch length", "Total branch length",
+                                         "Curvature index"]
+                    meas_l_branch = [n_branches, branch_len, tot_branch_len, curv_ind]
 
-                for m_str, m in zip(meas_str_l, meas_l):
-                    add_to_dataframe(dataframe, m_str, m, n)
-                    n += 1
+                    #########
 
-                for m_str_b, mb in zip(meas_str_l_branch, meas_l_branch):
-                    add_to_dataframe(dataframe_branch, m_str_b, mb, n2)
-                    n2 += 1
+                    for m_str, m in zip(meas_str_l, meas_l):
+                        add_to_dataframe(dataframe, m_str, m, n)
+                        n += 1
 
+                    for m_str_b, mb in zip(meas_str_l_branch, meas_l_branch):
+                        add_to_dataframe(dataframe_branch, m_str_b, mb, n2)
+                        n2 += 1
 
-            writer = pd.ExcelWriter(dirpath.get() + os.sep + table_name.get() + "_MorphMeasurements_Table.xlsx",
-                                    engine='xlsxwriter')
+                writer = pd.ExcelWriter(dirpath.get() + os.sep + table_name.get() + "_MorphMeasurements_Table.xlsx",
+                                        engine='xlsxwriter')
 
-            dataframe.to_excel(writer, sheet_name="ShapeDescriptors")
-            dataframe_branch.to_excel(writer, sheet_name="BranchAnalysis")
+                dataframe.to_excel(writer, sheet_name="ShapeDescriptors")
+                dataframe_branch.to_excel(writer, sheet_name="BranchAnalysis")
 
-            writer.save()
+                writer.save()
 
-            tkinter.messagebox.showinfo("Done", "Table generated", parent=gm_root)
+                tkinter.messagebox.showinfo("Done", "Table generated", parent=gm_root)
+
+            else:
+                tkinter.messagebox.showinfo("Error", "Image names in raw and segmentation folder are not identical",
+                                            parent=gm_root)
 
         self.place_button(gm_root, "Get Measurements", measure, 200, 330, 30, 110)
         gm_root.mainloop()
@@ -347,9 +355,7 @@ class MorphComparison(Control):
     def __init__(self):
         Control.__init__(self)
 
-
     def get_stats(self, desc, table_path1, table_path2, tab1_name, tab2_name, stat_val):
-
 
         if desc == "Number of branches" or desc == "Branch length" or desc == "Total branch length" or desc == "Curvature index":
 
@@ -388,7 +394,6 @@ class MorphComparison(Control):
 
                 norm_p.append(normaltest(values_list)[1])
 
-
         # converting dictionary with different list lengths into a pandas dataframe
         dataframe = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in data_d.items()]))
 
@@ -407,7 +412,7 @@ class MorphComparison(Control):
                     eff_siz = cohens_d(dataframe[a].dropna(), dataframe[b].dropna())
 
                 else:
-                    pval = [1,1]
+                    pval = [1, 1]
                     eff_siz = 0
 
                 data1_l.append(a)
@@ -439,7 +444,6 @@ class MorphComparison(Control):
                 data1_l, data2_l, pval_l, eff_siz_l = compare_samples(ttest_ind)
 
                 hyp_test = "T-test (two independent samples)"
-
 
             return norm_p, dataframe, pval_l, eff_siz_l, hyp_test, max_vals
 
@@ -497,7 +501,6 @@ class MorphComparison(Control):
         popupMenu_stat = OptionMenu(ma_root, stat_value, *set(stat_list))
         popupMenu_stat.place(bordermode=OUTSIDE, x=25, y=320, height=30, width=160)
 
-
         def start_analysis():
 
             stat_val = stat_value.get()
@@ -526,13 +529,13 @@ class MorphComparison(Control):
             for desc in descriptor_list:
 
                 norm_p, dataframe, pval_l, eff_siz_l, hyp_test, max_vals = self.get_stats(desc, table_path1.get(),
-                                                                                           table_path2.get(), tab1_name,
-                                                                                           tab2_name, stat_val)
+                                                                                          table_path2.get(), tab1_name,
+                                                                                          tab2_name, stat_val)
 
                 if norm_p == False:
                     raise ValueError('Number of samples needs to be 8 or higher for statistical analysis')
 
-                dataframe.to_excel(writer, sheet_name="sing_vals_"+desc)
+                dataframe.to_excel(writer, sheet_name="sing_vals_" + desc)
 
                 norm_p_l1.append(norm_p[0])
                 norm_p_l2.append(norm_p[1])
@@ -615,7 +618,6 @@ class MorphComparison(Control):
         popupMenu_stat = OptionMenu(ma_root, stat_value, *set(stat_list))
         popupMenu_stat.place(bordermode=OUTSIDE, x=265, y=320, height=30, width=160)
 
-
         def start_analysis():
 
             desc = descriptor.get()
@@ -632,11 +634,13 @@ class MorphComparison(Control):
             new_tab1_name = tab1_name + " normality test p-value"
             new_tab2_name = tab2_name + " normality test p-value"
 
-            stat_frame = pd.DataFrame(columns=[new_tab1_name, new_tab2_name, "Hypothesis test", "Hypothesis test p-value",
+            stat_frame = pd.DataFrame(
+                columns=[new_tab1_name, new_tab2_name, "Hypothesis test", "Hypothesis test p-value",
                          "Effect size", "N"])
 
-            norm_p, dataframe, pval_l, eff_siz_l, hyp_test, max_vals = self.get_stats(desc, table_path1.get(), table_path2.get(),
-                                                                            tab1_name, tab2_name, stat_val)
+            norm_p, dataframe, pval_l, eff_siz_l, hyp_test, max_vals = self.get_stats(desc, table_path1.get(),
+                                                                                      table_path2.get(),
+                                                                                      tab1_name, tab2_name, stat_val)
 
             if norm_p != False:
 
@@ -649,7 +653,6 @@ class MorphComparison(Control):
                 stat_frame["Effect size"] = eff_siz_l
                 stat_frame["N"] = [len(dataframe)]
                 ########
-
 
                 increase = 0
                 for index, row in stat_frame.iterrows():
@@ -671,7 +674,8 @@ class MorphComparison(Control):
                     x1 = 0
                     x2 = 1
 
-                    significance_bar(pos_y=max_bar + 0.1 * max_bar + increase, pos_x=[x1, x2], bar_y=max_bar * 0.05, p=p,
+                    significance_bar(pos_y=max_bar + 0.1 * max_bar + increase, pos_x=[x1, x2], bar_y=max_bar * 0.05,
+                                     p=p,
                                      y_dist=max_bar * 0.02,
                                      distance=0.05)
 
@@ -696,6 +700,7 @@ class MorphComparison(Control):
         self.place_button(ma_root, "Plot", start_analysis, 195, 400, 30, 110)
 
         ma_root.mainloop()
+
 
 class CorrelationAnalysis(Control):
 
@@ -729,7 +734,6 @@ class CorrelationAnalysis(Control):
         mean_int = StringVar(ca_root)
         max_int = StringVar(ca_root)
         min_int = StringVar(ca_root)
-
 
         def askopentable1():
             set_tablepath1 = tkinter.filedialog.askopenfilename(parent=ca_root, title='Select file')
@@ -775,7 +779,6 @@ class CorrelationAnalysis(Control):
 
         self.place_text(ca_root, "Select up to 4 variables to compare against each other", 15, 370, None, None)
 
-
         # left side
         width = 200
         place_checkbutton(ca_root, "Number of branches", nb, 25, 400, 150)
@@ -785,7 +788,6 @@ class CorrelationAnalysis(Control):
         place_checkbutton(ca_root, "Curvature index", ci, 25, 430, 123)
         place_checkbutton(ca_root, "Solidity", sol, 175, 430, 115)
         place_checkbutton(ca_root, "Mean Intensity", mean_int, 300, 430, 155)
-
 
         place_checkbutton(ca_root, "Min Intensity", min_int, 25, 460, 110)
         place_checkbutton(ca_root, "Area", ar, 175, 460, 100)
@@ -799,7 +801,7 @@ class CorrelationAnalysis(Control):
 
         def pair_analysis():
 
-            #descriptor_list, stat_list = control_class.stat_and_desc()
+            # descriptor_list, stat_list = control_class.stat_and_desc()
 
             descriptor_list = ["Number of branches", "Branch length", "Total branch length", "Curvature index",
                                "Area", "Minor Axis Length", "Major Axis Length", "Eccentricity", "Perimeter",
@@ -820,7 +822,6 @@ class CorrelationAnalysis(Control):
                 img_list = list(set(table_ba["Image"]))
 
                 for count, img in enumerate(img_list):
-
                     new_table_ba = table_ba[table1_ba["Image"] == img]
                     new_table_sd = table_sd[table1_sd["Image"] == img]
 
@@ -842,13 +843,12 @@ class CorrelationAnalysis(Control):
 
             final_table = table2.append(table)
 
-            #print(final_table)
+            # print(final_table)
 
             selection_list = ["Data"]
             for name, var in zip(descriptor_list, variable_list):
 
                 if int(var.get()) == 1:
-
                     selection_list.append(name)
 
                 if len(selection_list) == 5:
@@ -945,7 +945,6 @@ class MultiMorphComparison(Control):
                     values_list = meas_table[stat_val].tolist()
 
                     if len(values_list) < 8:
-
                         raise ValueError('Number of samples needs to be 8 or higher for statistical analysis')
 
                     ######
@@ -1019,7 +1018,6 @@ class MultiMorphComparison(Control):
 
                 hyp_p.append(p_val)
 
-
             stat_frame["Hypothesis test"] = hyp_test
             stat_frame["Hypothesis test p-value"] = hyp_p
 
@@ -1084,7 +1082,7 @@ class MultiMorphComparison(Control):
 
             dataframe = pd.DataFrame(columns=table_list)
 
-            #stat_frame["Descriptor"] = descriptor_list
+            # stat_frame["Descriptor"] = descriptor_list
 
             for table_name in table_list:
 
@@ -1092,9 +1090,9 @@ class MultiMorphComparison(Control):
                 table_sd = pd.read_excel(folder_path + os.sep + table_name, sheet_name="ShapeDescriptors")
 
                 max_vals = []
-                #norm_p = []
+                # norm_p = []
 
-                #for desc in descriptor_list:
+                # for desc in descriptor_list:
 
                 if desc == "Number of branches" or desc == "Branch length" or desc == "Total branch length" or desc == "Curvature index":
 
@@ -1134,6 +1132,7 @@ class MultiMorphComparison(Control):
         self.place_button(mmp_root, "Create plot", multi_sample_plot, 195, 200, 30, 110)
 
         mmp_root.mainloop()
+
 
 if __name__ == '__main__':
     """
