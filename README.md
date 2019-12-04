@@ -1,16 +1,18 @@
-# MitoSegNet Analyser Documentation
+# MitoA analyser Documentation
 
 ---
 
-### The MitoSegNet Analyser is an easy-to-use GUI-based morphological quantification tool that enables biologists to analyse and compare different samples of segmented images. 
+### The MitoA analyser is an easy-to-use GUI-based morphological quantification tool that enables biologists to analyse and compare different samples of segmented images. 
+
+To download the MitoA tool for Windows please visit https://zenodo.org/record/3557720#.XeeS4NV7lhG 
 
 ---
 
-The MitoSegNet Analyser is intended to be used after successful segmentation with the MitoSegNet but can also be applied to any dataset consisting of 8-bit raw images and their masks. 
+The MitoA tool is intended to be used after successful segmentation with the MitoS tool but can also be applied to any dataset consisting of 8-bit raw images and their masks. 
 
-## Running the MitoSegNet Analyser
+## Running the MitoA analyser
 
-Do not close the terminal while running the MitoSegNet Analyser. 
+Do not close the terminal while running the MitoA tool. 
 
 ## Get Measurements 
 
